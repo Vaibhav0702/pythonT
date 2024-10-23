@@ -2,7 +2,7 @@ post = input("Enter the post: ")
 
 
 
-if("abc" in post.lower()):
+if("abc".lower() in post.lower()):
     print("This post is talking about abc")
 
 else:
