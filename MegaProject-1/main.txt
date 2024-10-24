@@ -1,0 +1,18 @@
+
+
+
+# for setup virtual env
+'''
+PS C:\Users\User\Desktop\New folder\New folder\python\MegaProject-1> python --version
+Python 3.12.4
+PS C:\Users\User\Desktop\New folder\New folder\python\MegaProject-1> python -m venv env
+PS C:\Users\User\Desktop\New folder\New folder\python\MegaProject-1> .\env\Scripts\activate
+'''
+
+'''
+pip install SpeechRecognition
+pip install PyAudio
+pip install setuptools
+pip install pyttsx3
+pip install pocketsphinx
+'''
