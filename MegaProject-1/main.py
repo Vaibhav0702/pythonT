@@ -11,7 +11,7 @@ import os
 
 recognizer = sr.Recognizer()
 engine = pyttsx3.init() 
-newsapi = "d093053d72bc40248998159804e0e67d"
+newsapi = "4f133d1e03c749f5af747d25d5b6fa3e"
 
 
 def speak_old(text):
@@ -88,19 +88,25 @@ def processCommand(c):
         song = c.lower().split(" ")[1]
         link = musicLibrary.music[song]
         webbrowser.open(link)
-    elif "news" in c.lower():
-        r = requests.get(f"https://newsapi.org/v2/top-headlines?country=in&apiKey={newsapi}")
-        if r.status_code == 200:
-            # Parse the JSON response
-            data = r.json()
-            
-            # Extract the articles
-            articles = data.get('articles', [])
-            
-            # Print the headlines
-            for article in articles:
-                speak(article['title'])
-
+    elif "news" in command:
+        try:
+            r = requests.get(f"https://newsapi.org/v2/top-headlines?category=business&apiKey={newsapi}")
+            if r.status_code == 200:
+                # Parse the JSON response
+                data = r.json()
+                articles = data.get('articles', [])
+                
+                if articles:
+                    speak("Here are the top news headlines:")
+                    for article in articles:
+                        speak(article['title'])
+                else:
+                    speak("Sorry, I couldn't find any news at the moment.")
+            else:
+                speak(f"Error fetching news: {r.status_code}")
+        except requests.RequestException as e:
+            speak("Sorry, I couldn't connect to the news service.")
+            print(f"Error: {e}")
     else:
         # Let OpenAI handle the request
         output = aiProcess(c)
@@ -120,33 +126,71 @@ def processCommand(c):
 
 if __name__ == "__main__":
     speak("Initializing Jarvis....")
+    recognizer = sr.Recognizer()
+    # while True:
+    #     #Listen for wake word "jarvis"
+    #     #obtain audio from the microphone
+    #     r = sr.Recognizer()
+          
+    #     try:
+    #       with sr.Microphone() as source:
+    #         print("Listening..")
+    #         # audio =  r.listen(source , timeout=2 , phrase_time_limit=1)
+    #         audio = r.listen(source, timeout=5, phrase_time_limit=10)
+
+        
+    #         print("recognizing...")
+  
+    #         word = r.recognize_google(audio)
+    #         if(word.lower() == "jarvis"):
+    #             speak("Ya")
+    #             # Listen for command
+    #             with sr.Microphone() as source:
+    #                 print("Jarvis Active...")
+    #                 audio = r.listen(source)
+    #                 command = r.recognize_google(audio)
+
+    #                 processCommand(command)
+
+    #     except Exception as e:
+    #         print("Error; {0}".format(e))
 
     while True:
-        #Listen for wake word "jarvis"
-        #obtain audio from the microphone
-        r = sr.Recognizer()
-          
         try:
-          with sr.Microphone() as source:
-            print("Listening..")
-            audio =  r.listen(source , timeout=2 , phrase_time_limit=1)
-        
-            print("recognizing...")
-  
-            word = r.recognize_google(audio)
-            if(word.lower() == "jarvis"):
-                speak("Ya")
-                # Listen for command
-                with sr.Microphone() as source:
-                    print("Jarvis Active...")
-                    audio = r.listen(source)
-                    command = r.recognize_google(audio)
+            # Listen for the wake word "jarvis"
+            with sr.Microphone() as source:
+                print("Listening for wake word...")
+                recognizer.adjust_for_ambient_noise(source)
+                audio = recognizer.listen(source, timeout=5, phrase_time_limit=3)
 
-                    processCommand(command)
+                print("Recognizing...")
+                word = recognizer.recognize_google(audio)
 
+                if word.lower() == "jarvis":
+                    speak("Yes, I'm listening...")
+
+                    # Listen for a command
+                    with sr.Microphone() as source:
+                        print("Jarvis Active... Speak your command.")
+                        recognizer.adjust_for_ambient_noise(source)
+                        audio_command = recognizer.listen(source, timeout=5)
+
+                        try:
+                            command = recognizer.recognize_google(audio_command)
+                            print(f"Command recognized: {command}")
+                            processCommand(command)
+
+                        except sr.UnknownValueError:
+                            speak("Sorry, I didn't catch that. Please try again.")
+                        except sr.RequestError as e:
+                            speak("There was an issue with the speech recognition service.")
+                            print(f"API error: {e}")
+
+        except sr.UnknownValueError:
+            print("No speech detected or unrecognized.")
+        except sr.RequestError as e:
+            print(f"Could not request results from Google Speech Recognition service; {e}")
         except Exception as e:
-            print("Error; {0}".format(e))
-
-
+            print(f"Error: {e}")
 
 
